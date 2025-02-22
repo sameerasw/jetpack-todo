@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import com.sameerasw.todo.ui.theme.ToDoTheme
 import java.util.UUID
 
@@ -49,7 +50,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ToDoTheme {
-                AppUI()
+                val ViewModel: TodoViewModel = TodoViewModel() // creates a view model instance
+                AppUI(viewModel = ViewModel)
             }
         }
     }
@@ -57,9 +59,9 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppUI( modifier: Modifier = Modifier) {
+fun AppUI( modifier: Modifier = Modifier, viewModel: TodoViewModel) {
     var showAlert: Boolean by remember { mutableStateOf(false) }
-    var todoItems: List<TodoItem> by remember { mutableStateOf(listOf()) }
+//    var todoItems: List<TodoItem> by remember { mutableStateOf(listOf()) }
 
     Scaffold(
         floatingActionButton = {
@@ -130,13 +132,11 @@ fun AppUI( modifier: Modifier = Modifier) {
                         onClick = {
                             showAlert = false
                             // Add the new ToDo
-                            todoItems += TodoItem(
+                            viewModel.addTodo(
                                 id = UUID.randomUUID().hashCode().toString(),
                                 title = title,
-                                description = description,
-                                isCompleted = false
+                                description = description
                             )
-                            Log.e("MainActivity : ", todoItems.toString())
                         }
                     ) {
                         Text("Add")
@@ -158,8 +158,8 @@ fun AppUI( modifier: Modifier = Modifier) {
         LazyColumn(
             modifier = Modifier.padding(innerPadding)
         ) {
-            items(todoItems.size) { index ->
-                val todoItem = todoItems[index]
+            items(viewModel.todos.value.size) { index ->
+                val todoItem = viewModel.todos.value[index]
                 ToDoItem(todoItem = todoItem)
             }
         }
@@ -208,6 +208,6 @@ fun ToDoItem(todoItem: TodoItem) {
 @Composable
 fun AppUIPreview() {
     ToDoTheme {
-        AppUI()
+        AppUI(viewModel = TodoViewModel())
     }
 }
